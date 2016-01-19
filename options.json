@@ -1,0 +1,43 @@
+{
+  "uri": [
+    "wp-",
+    ".php",
+    ".txt",
+    ".sql",
+    ".asp",
+    "administrator",
+    "bitrix",
+    "wp-",
+    "wordpress",
+    "configuration",
+    "xmlrpc",
+    "/components",
+    "market",
+    "yandex",
+    "fckeditor",
+    "/index.php",
+    "price.xml",
+    "blogs",
+    "uploadify",
+    "/pma/",
+    "/phpmyadmin/",
+    "/undefined",
+    "tiny_mce/",
+    "ckeditor",
+    "filemanager",
+    "includes.php",
+    "backup",
+    "public_html",
+    ".tar.gz",
+    "filezilla",
+    "/modile/",
+    "/m/",
+    "mootools.js"
+  ],
+  "exclude": [
+    "127.0.0.1",
+    "91.185.49.203",
+    "91.185.48.28",
+    "66.249.78.203"
+  ]
+}
