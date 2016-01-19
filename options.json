@@ -30,8 +30,6 @@
     "public_html",
     ".tar.gz",
     "filezilla",
-    "/modile/",
-    "/m/",
     "mootools.js"
   ],
   "exclude": [
