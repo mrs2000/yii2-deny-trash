@@ -1,5 +1,5 @@
 {
-    "name": "mrssoft/yii-deny-trash",
+    "name": "mrssoft/yii2-deny-trash",
     "version": "1.0.0",
     "description": "Adds a ban on access by ip address, in accordance with the rules",
     "authors": [
