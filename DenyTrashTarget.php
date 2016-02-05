@@ -41,8 +41,8 @@ class DenyTrashTarget extends Target
 
             $url = Yii::$app->request->url;
 
-            if (isset($this->options['uri'])) {
-                foreach ($this->options['uri'] as $item) {
+            if (isset($this->options['deny']['uri'])) {
+                foreach ($this->options['deny']['uri'] as $item) {
                     if (stripos($url, $item) !== false) {
                         $this->deny('uri[' . $item  .'] ' . $url);
                         break;
@@ -55,7 +55,9 @@ class DenyTrashTarget extends Target
     private function deny($comment = '')
     {
         $ip = Yii::$app->request->userIP;
-        if ($this->checkIP($ip)) {
+        $userAgent = Yii::$app->request->userAgent;
+        
+        if ($this->checkIP($ip) && $this->checkBrowser($userAgent)) {
 
             $path = Yii::getAlias('@webroot') . '/.htaccess';
             $data = file_get_contents($path);
@@ -79,6 +81,19 @@ class DenyTrashTarget extends Target
     private function checkIP($ip)
     {
         return filter_var($ip, FILTER_VALIDATE_IP) &&
-               (!isset($this->options['exclude']) || !in_array($ip, $this->options['exclude'], true));
+               (!isset($this->options['exclude']['ip']) || !in_array($ip, $this->options['exclude']['ip'], true));
+    }
+
+    private function checkBrowser($userAgent)
+    {
+        if (isset($this->options['exclude']['browser'])) {
+            foreach ($this->options['exclude']['browser'] as $browser) {
+                if (mb_strpos($userAgent, $browser) !== false) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
