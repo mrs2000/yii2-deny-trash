@@ -18,6 +18,7 @@
       "/phpmyadmin/",
       "/undefined",
       "tiny_mce/",
+      "/pricing",
       "ckeditor",
       "filemanager",
       "includes.php",
@@ -25,16 +26,16 @@
       "public_html",
       ".tar.gz",
       "filezilla",
-      "mootools.js"
+      "mootools.js",
+      "?option=com_",
+      "license.php"
     ]
   },
   "exclude": {
     "ip": [
       "127.0.0.1",
       "91.185.49.203",
-      "91.185.48.28",
-      "66.249.78.203",
-      "66.249.78.210"
+      "91.185.48.28"
     ],
     "browser": [
       "Google",
