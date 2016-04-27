@@ -60,15 +60,24 @@ class DenyTrashTarget extends Target
         if ($this->checkIP($ip) && $this->checkBrowser($userAgent)) {
 
             $path = Yii::getAlias('@webroot') . '/.htaccess';
-            $data = file_get_contents($path);
-            $comment = $this->clear($comment);
 
-            foreach (['/(order[a-zA-Z ,]*)[\r\n]/Umi'] as $pattern) {
-                if (preg_match($pattern, $data)) {
-                    $data = preg_replace($pattern, "$1\r\ndeny from $ip # $comment\r", $data);
-                    file_put_contents($path, $data);
-                    break;
+            $fp = fopen($path, 'r+');
+            if ($fp && flock($fp, LOCK_EX)) {
+                if ($data = fread($fp, filesize($path))) {
+                    $comment = $this->clear($comment);
+                    foreach (['/(order[a-zA-Z ,]*)[\r\n]/Umi'] as $pattern) {
+                        if (preg_match($pattern, $data)) {
+                            $data = preg_replace($pattern, "$1\r\ndeny from $ip # $comment\r", $data);
+                            ftruncate($fp, 0);
+                            fseek($fp, 0);
+                            fwrite($fp, $data, strlen($data));
+                            break;
+                        }
+                    }
                 }
+                fflush($fp);
+                flock($fp, LOCK_UN);
+                fclose($fp);
             }
         }
     }

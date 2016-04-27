@@ -28,7 +28,10 @@
       "filezilla",
       "mootools.js",
       "?option=com_",
-      "license.php"
+      "license.php",
+      "admin.php",
+      "mootools.js",
+      "dumper.php"
     ]
   },
   "exclude": {
