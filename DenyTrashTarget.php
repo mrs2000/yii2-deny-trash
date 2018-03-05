@@ -1,4 +1,5 @@
-<?
+<?php
+
 namespace mrssoft\denytrash;
 
 use Yii;
@@ -6,6 +7,9 @@ use yii\log\Target;
 
 class DenyTrashTarget extends Target
 {
+    /**
+     * @var array
+     */
     private $options;
 
     public function export()
@@ -15,7 +19,7 @@ class DenyTrashTarget extends Target
         }
     }
 
-    private function loadOptions()
+    private function loadOptions(): bool
     {
         if ($this->options === null) {
             $file = __DIR__ . '/options.json';
@@ -32,19 +36,18 @@ class DenyTrashTarget extends Target
         return true;
     }
 
-    private function processMessage($message)
+    private function processMessage(array $message)
     {
         if ($message[2] == 'yii\web\HttpException:404') {
             if ($this->loadOptions() === false) {
                 return;
             }
 
-            $url = Yii::$app->request->url;
-
             if (isset($this->options['deny']['uri'])) {
+                $url = Yii::$app->request->url;
                 foreach ($this->options['deny']['uri'] as $item) {
                     if (stripos($url, $item) !== false) {
-                        $this->deny('uri[' . $item  .'] ' . $url);
+                        $this->deny('uri[' . $item . '] ' . $url);
                         break;
                     }
                 }
@@ -52,12 +55,11 @@ class DenyTrashTarget extends Target
         }
     }
 
-    private function deny($comment = '')
+    private function deny(string $comment = '')
     {
         $ip = Yii::$app->request->userIP;
-        $userAgent = Yii::$app->request->userAgent;
-        
-        if ($this->checkIP($ip) && $this->checkBrowser($userAgent)) {
+
+        if ($this->checkIP($ip) && $this->checkBrowser(Yii::$app->request->userAgent)) {
 
             $path = Yii::getAlias('@webroot') . '/.htaccess';
 
@@ -82,18 +84,17 @@ class DenyTrashTarget extends Target
         }
     }
 
-    private function clear($string)
+    private function clear(string $string)
     {
         return str_replace([':', '/'], [';', "\\"], $string);
     }
 
-    private function checkIP($ip)
+    private function checkIP(string $ip): bool
     {
-        return filter_var($ip, FILTER_VALIDATE_IP) &&
-               (!isset($this->options['exclude']['ip']) || !in_array($ip, $this->options['exclude']['ip'], true));
+        return filter_var($ip, FILTER_VALIDATE_IP) && (!isset($this->options['exclude']['ip']) || !in_array($ip, $this->options['exclude']['ip'], true));
     }
 
-    private function checkBrowser($userAgent)
+    private function checkBrowser(string $userAgent): bool
     {
         if (isset($this->options['exclude']['browser'])) {
             foreach ($this->options['exclude']['browser'] as $browser) {
