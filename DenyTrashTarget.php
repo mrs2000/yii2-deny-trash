@@ -63,7 +63,7 @@ class DenyTrashTarget extends Target
 
             $path = Yii::getAlias('@webroot') . '/.htaccess';
 
-            $fp = fopen($path, 'r+');
+            $fp = fopen($path, 'rb+');
             if ($fp && flock($fp, LOCK_EX)) {
                 if ($data = fread($fp, filesize($path))) {
                     $comment = $this->clear($comment);
