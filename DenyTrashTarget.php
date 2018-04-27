@@ -81,6 +81,11 @@ class DenyTrashTarget extends Target
                 flock($fp, LOCK_UN);
                 fclose($fp);
             }
+
+            //Disable all log targets
+            foreach (Yii::$app->log->targets as $target) {
+                $target->enabled = false;
+            }
         }
     }
 
