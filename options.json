@@ -30,7 +30,9 @@
       "license.php",
       "admin.php",
       "mootools.js",
-      "dumper.php"
+      "dumper.php",
+      "templates",
+      "wiki"
     ]
   },
   "exclude": {
