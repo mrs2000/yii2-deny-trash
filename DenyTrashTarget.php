@@ -12,6 +12,18 @@ class DenyTrashTarget extends Target
      */
     private $options;
 
+    /**
+     * Server type [Apache|Nginx]
+     * @var string
+     */
+    public $serverType = 'Apache';
+
+    /**
+     * Path to config path
+     * @var string
+     */
+    public $path;
+
     public function export()
     {
         foreach ($this->messages as $message) {
@@ -55,32 +67,13 @@ class DenyTrashTarget extends Target
         }
     }
 
-    private function deny(string $comment = '')
+    private function deny(string $comment = ''): void
     {
         $ip = Yii::$app->request->userIP;
 
         if ($this->checkIP($ip) && $this->checkBrowser(Yii::$app->request->userAgent)) {
 
-            $path = Yii::getAlias('@webroot') . '/.htaccess';
-
-            $fp = fopen($path, 'rb+');
-            if ($fp && flock($fp, LOCK_EX)) {
-                if ($data = fread($fp, filesize($path))) {
-                    $comment = $this->clear($comment);
-                    foreach (['/(order[a-zA-Z ,]*)[\r\n]/Umi'] as $pattern) {
-                        if (preg_match($pattern, $data)) {
-                            $data = preg_replace($pattern, "$1\r\ndeny from $ip # $comment\r", $data);
-                            ftruncate($fp, 0);
-                            fseek($fp, 0);
-                            fwrite($fp, $data, strlen($data));
-                            break;
-                        }
-                    }
-                }
-                fflush($fp);
-                flock($fp, LOCK_UN);
-                fclose($fp);
-            }
+            $this->{'deny' . $this->serverType}($ip, $comment);
 
             //Disable all log targets
             foreach (Yii::$app->log->targets as $target) {
@@ -89,7 +82,43 @@ class DenyTrashTarget extends Target
         }
     }
 
-    private function clear(string $string)
+    private function denyApache(string $ip, string  $comment): void
+    {
+        $path = Yii::getAlias('@webroot') . '/.htaccess';
+
+        $fp = fopen($path, 'rb+');
+        if ($fp && flock($fp, LOCK_EX)) {
+            if ($data = fread($fp, filesize($path))) {
+                $comment = $this->clear($comment);
+                foreach (['/(order[a-zA-Z ,]*)[\r\n]/Umi'] as $pattern) {
+                    if (preg_match($pattern, $data)) {
+                        $data = preg_replace($pattern, "$1\r\ndeny from $ip # $comment\r", $data);
+                        ftruncate($fp, 0);
+                        fseek($fp, 0);
+                        fwrite($fp, $data, strlen($data));
+                        break;
+                    }
+                }
+            }
+            fflush($fp);
+            flock($fp, LOCK_UN);
+            fclose($fp);
+        }
+    }
+
+    private function denyNginx(string $ip, string  $comment): void
+    {
+        $fp = fopen($this->path, 'ab');
+        if ($fp && flock($fp, LOCK_EX)) {
+            $data = "\r\ndeny $ip; # $comment";
+            fwrite($fp, $data, strlen($data));
+            fflush($fp);
+            flock($fp, LOCK_UN);
+            fclose($fp);
+        }
+    }
+
+    private function clear(string $string): string
     {
         return str_replace([':', '/'], [';', "\\"], $string);
     }
