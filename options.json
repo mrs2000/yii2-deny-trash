@@ -5,6 +5,8 @@
       ".txt",
       ".sql",
       ".asp",
+      ".env",
+      ".git",
       "administrator",
       "bitrix",
       "wordpress",
@@ -32,7 +34,8 @@
       "mootools.js",
       "dumper.php",
       "templates",
-      "wiki"
+      "wiki",
+      "HNAP1"
     ]
   },
   "exclude": {
