@@ -24,6 +24,11 @@ class DenyTrashTarget extends Target
      */
     public $path;
 
+    /**
+     * @var array
+     */
+    public $excludeIp = [];
+
     public function export()
     {
         foreach ($this->messages as $message) {
@@ -43,6 +48,8 @@ class DenyTrashTarget extends Target
             if (!is_array($this->options)) {
                 return false;
             }
+
+            $this->options['exclude']['ip'] = array_merge($this->options['exclude']['ip'], $this->excludeIp);
         }
 
         return true;
