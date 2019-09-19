@@ -35,7 +35,10 @@ Configuration:
         'targets' => [
         [
             'class' => 'mrssoft\denytrash\DenyTrashTarget',
-            'levels' => ['error']
+            'levels' => ['error'],
+            'serverType' => 'Apache',
+            'excludeIp' => ['195.206.45.15'],
+            'enabled' => true,
         ],
    ]
    ....

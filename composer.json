@@ -2,6 +2,7 @@
     "name": "mrssoft/yii2-deny-trash",
     "version": "1.1.2",
     "description": "Adds a ban on access by ip address, in accordance with the rules",
+    "license": "MIT",
     "authors": [
         {
             "name": "Melnikov Ruslan",
@@ -17,4 +18,4 @@
             "mrssoft\\denytrash\\": ""
         }
     }
-}
+}-+
