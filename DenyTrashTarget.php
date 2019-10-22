@@ -135,9 +135,9 @@ class DenyTrashTarget extends Target
         return filter_var($ip, FILTER_VALIDATE_IP) && (!isset($this->options['exclude']['ip']) || !in_array($ip, $this->options['exclude']['ip'], true));
     }
 
-    private function checkBrowser(string $userAgent): bool
+    private function checkBrowser(?string $userAgent): bool
     {
-        if (isset($this->options['exclude']['browser'])) {
+        if ($userAgent && isset($this->options['exclude']['browser'])) {
             foreach ($this->options['exclude']['browser'] as $browser) {
                 if (mb_strpos($userAgent, $browser) !== false) {
                     return false;
