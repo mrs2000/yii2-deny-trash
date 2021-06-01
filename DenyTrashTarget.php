@@ -29,6 +29,8 @@ class DenyTrashTarget extends Target
      */
     public $excludeIp = [];
 
+    public $maxRecords = 200;
+
     public function export()
     {
         foreach ($this->messages as $message) {
@@ -89,7 +91,7 @@ class DenyTrashTarget extends Target
         }
     }
 
-    private function denyApache(string $ip, string  $comment): void
+    protected function denyApache(string $ip, string $comment): void
     {
         $path = Yii::getAlias('@webroot') . '/.htaccess';
 
@@ -97,14 +99,19 @@ class DenyTrashTarget extends Target
         if ($fp && flock($fp, LOCK_EX)) {
             if ($data = fread($fp, filesize($path))) {
                 $comment = $this->clear($comment);
-                foreach (['/(order[a-zA-Z ,]*)[\r\n]/Umi'] as $pattern) {
-                    if (preg_match($pattern, $data)) {
-                        $data = preg_replace($pattern, "$1\r\ndeny from $ip # $comment\r", $data);
-                        ftruncate($fp, 0);
-                        fseek($fp, 0);
-                        fwrite($fp, $data, strlen($data));
-                        break;
-                    }
+                $date = date('Y-m-d H:i:s');
+                if (preg_match('/#deny-trash-start\n(.*)#deny-trash-end/si', $data, $matches)) {
+                    $lines = $matches[1] ? explode("\n", $matches[1]) : [];
+                    $lines = array_filter($lines, static function ($e) {
+                        return empty(trim($e)) === false;
+                    });
+                    $lines = array_splice($lines, count($lines) - $this->maxRecords, $this->maxRecords);
+                    $lines[] = "#$ip - $date - $comment";
+                    $lines[] = "deny from $ip";
+                    $data = preg_replace('/(#deny-trash-start\n)(.*)(#deny-trash-end)/si', '$1' . implode("\r\n", $lines) . "\r\n$3", $data);
+                    ftruncate($fp, 0);
+                    fseek($fp, 0);
+                    fwrite($fp, $data, strlen($data));
                 }
             }
             fflush($fp);
@@ -113,7 +120,7 @@ class DenyTrashTarget extends Target
         }
     }
 
-    private function denyNginx(string $ip, string  $comment): void
+    protected function denyNginx(string $ip, string $comment): void
     {
         $fp = fopen($this->path, 'ab');
         if ($fp && flock($fp, LOCK_EX)) {
