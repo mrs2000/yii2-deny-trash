@@ -97,18 +97,22 @@ class DenyTrashTarget extends Target
 
         $fp = fopen($path, 'rb+');
         if ($fp && flock($fp, LOCK_EX)) {
-            if ($data = fread($fp, filesize($path))) {
-                $comment = $this->clear($comment);
-                $date = date('Y-m-d H:i:s');
-                if (preg_match('/#deny-trash-start\n(.*)#deny-trash-end/si', $data, $matches)) {
-                    $lines = $matches[1] ? explode("\n", $matches[1]) : [];
+            if (($data = fread($fp, filesize($path))) && preg_match('/#deny-trash-start\n(.*)#deny-trash-end/si', $data, $matches)) {
+                $lines = $matches[1] ? explode("\n", $matches[1]) : [];
+                $lines = array_map(static function ($e) {
+                    return trim($e);
+                }, $lines);
+                $lock = "deny from $ip";
+                if (in_array($lock, $lines) === false) {
+                    $comment = $this->clear($comment);
+                    $date = date('Y-m-d H:i:s');
                     $lines = array_filter($lines, static function ($e) {
-                        return empty(trim($e)) === false;
+                        return empty($e) === false;
                     });
                     $lines = array_splice($lines, count($lines) - $this->maxRecords, $this->maxRecords);
                     $lines[] = "#$ip - $date - $comment";
-                    $lines[] = "deny from $ip";
-                    $data = preg_replace('/(#deny-trash-start\n)(.*)(#deny-trash-end)/si', '$1' . implode("\r\n", $lines) . "\r\n$3", $data);
+                    $lines[] = $lock;
+                    $data = preg_replace('/(#deny-trash-start\n)(.*)(#deny-trash-end)/si', '$1' . implode("\n", $lines) . "\n$3", $data);
                     ftruncate($fp, 0);
                     fseek($fp, 0);
                     fwrite($fp, $data, strlen($data));
